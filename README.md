@@ -28,6 +28,8 @@ el atardecer si ya había un corte en curso.
 - **Batería de respaldo de 12V**, independiente del adaptador monitoreado,
   que alimenta toda la electrónica (NodeMCU, relé) y la luz de emergencia
   — así el sistema sigue funcionando durante el corte que debe detectar.
+- **Controlador de carga** (AC → 12V), enchufado en la misma toma
+  monitoreada, que mantiene cargada la batería de respaldo.
 - **Regulador step-down 12V → 5V** (tipo LM2596 o similar) entre la batería
   y la NodeMCU/lógica del relé.
 - **Circuito divisor de voltaje** para medir la presencia de tensión de línea
@@ -47,8 +49,9 @@ a paso, ver **[docs/CABLEADO.md](docs/CABLEADO.md)**.
 ### ⚠️ Advertencia de seguridad
 
 Todo el proyecto es de bajo voltaje DC (5V/12V) — no hay cables de línea AC
-que manipular en ningún punto. El adaptador de 5V que monitorea la toma no
-requiere cableado, es un dispositivo sellado que solo se enchufa.
+que manipular en ningún punto. Los dos únicos componentes que tocan AC (el
+adaptador de 5V que monitorea la toma, y el controlador de carga de la
+batería) son dispositivos sellados que solo se enchufan.
 
 Aun así, la batería de 12V puede entregar corriente suficiente para
 provocar chispas o daño si se cortocircuitan sus terminales:
