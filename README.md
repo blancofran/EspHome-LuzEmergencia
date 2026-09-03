@@ -19,8 +19,11 @@ el atardecer si ya había un corte en curso.
 
 ## Hardware requerido
 
-- **ESP8266** (board `esp01_1m`, p. ej. ESP-01).
-- **Relé** para controlar la luz de emergencia (conectado a `GPIO4`).
+- **ESP8266** en una placa **NodeMCU** (módulo ESP-12E, board `nodemcuv2` en
+  ESPHome) — no un módulo ESP-01, que no expone los pines `A0`/`GPIO4` que
+  usa este proyecto.
+- **Relé** para controlar la luz de emergencia (conectado a `GPIO4`, pin
+  `D2` en la serigrafía de la NodeMCU).
 - **Circuito divisor de voltaje** para medir la presencia de tensión de línea
   de forma segura y aislada:
   - Fuente aislada tipo **HLK-PM01** (5V) alimentada desde la línea AC,
@@ -29,6 +32,9 @@ el atardecer si ya había un corte en curso.
   - **R1 = 10 kΩ** y **R2 = 15 kΩ** formando el divisor de voltaje hacia el
     pin ADC.
   - **C1 = 0.1 µF** como filtro/estabilizador de la lectura hacia `A0`.
+
+Para el diagrama de cableado completo, el cálculo del divisor y el checklist
+de armado paso a paso, ver **[docs/CABLEADO.md](docs/CABLEADO.md)**.
 
 ### ⚠️ Advertencia de seguridad
 
@@ -49,10 +55,12 @@ que puede causar lesiones graves o la muerte si se manipula incorrectamente.
 
 ## Pines usados
 
-| Pin   | Función                                              |
-|-------|-------------------------------------------------------|
-| `A0`  | Entrada ADC — lectura de voltaje del divisor          |
-| `GPIO4` | Salida digital — control del relé de luz de emergencia |
+| Pin (YAML) | Etiqueta en la NodeMCU | Función                                              |
+|------------|-------------------------|-------------------------------------------------------|
+| `A0`       | `A0`                    | Entrada ADC — lectura de voltaje del divisor          |
+| `GPIO4`    | `D2`                    | Salida digital — control del relé de luz de emergencia |
+
+Detalle completo de cableado en [docs/CABLEADO.md](docs/CABLEADO.md).
 
 ## Instalación
 
