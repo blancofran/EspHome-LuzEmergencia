@@ -1,5 +1,9 @@
 # Cableado del ESP8266 (NodeMCU)
 
+¿Vas a usar un **ESP32** en vez de NodeMCU/ESP8266? Ver la variante en
+[CABLEADO-ESP32.md](CABLEADO-ESP32.md) — el diseño eléctrico es el mismo,
+solo cambian los pines y un parámetro del sensor ADC.
+
 Este documento detalla el cableado físico del proyecto: la placa usada, el
 circuito divisor de voltaje que detecta la presencia de corriente, y la
 conexión del relé. El circuito de detección parte de un **adaptador de 5V**

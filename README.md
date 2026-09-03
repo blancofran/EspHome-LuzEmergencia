@@ -1,13 +1,15 @@
 # Luz Emergencia
 
-Proyecto [ESPHome](https://esphome.io/) para un ESP8266 que detecta cortes de
-electricidad y enciende automáticamente una luz de emergencia (relé), con
-integración completa en Home Assistant.
+Proyecto [ESPHome](https://esphome.io/) que detecta cortes de electricidad y
+enciende automáticamente una luz de emergencia (relé), con integración
+completa en Home Assistant. Soporta **ESP8266 (NodeMCU)** o **ESP32** — el
+diseño eléctrico es el mismo para ambos, solo cambia el archivo YAML y
+algunos pines.
 
 ## Qué hace
 
 El dispositivo mide continuamente la tensión de la red eléctrica a través de
-un circuito divisor de voltaje conectado al ADC del ESP8266. Cuando detecta
+un circuito divisor de voltaje conectado al ADC del microcontrolador. Cuando detecta
 que la tensión cae por debajo del umbral (corte de electricidad), enciende un
 relé que activa una luz de emergencia. Cuando la corriente regresa, el relé
 se apaga automáticamente tras un retardo configurable, para evitar apagones
@@ -19,19 +21,31 @@ el atardecer si ya había un corte en curso.
 
 ## Hardware requerido
 
+Elegí **una** de estas dos placas — el resto del hardware es idéntico para
+ambas:
+
 - **ESP8266** en una placa **NodeMCU** (módulo ESP-12E, board `nodemcuv2` en
   ESPHome) — no un módulo ESP-01, que no expone los pines `A0`/`GPIO4` que
-  usa este proyecto.
-- **Relé** para controlar la luz de emergencia (conectado a `GPIO4`, pin
-  `D2` en la serigrafía de la NodeMCU).
+  usa este proyecto. YAML: [luz-emergencia.yaml](luz-emergencia.yaml).
+  Cableado: [docs/CABLEADO.md](docs/CABLEADO.md).
+- **ESP32 DevKit** (board `esp32dev` en ESPHome). YAML:
+  [luz-emergencia-esp32.yaml](luz-emergencia-esp32.yaml). Cableado:
+  [docs/CABLEADO-ESP32.md](docs/CABLEADO-ESP32.md).
+
+Y en ambos casos:
+
+- **Relé** para controlar la luz de emergencia (conectado a `GPIO4` — pin
+  `D2` en la serigrafía de la NodeMCU; en ESP32 es el mismo número de pin
+  pero en otra ubicación física, ver [docs/CABLEADO-ESP32.md](docs/CABLEADO-ESP32.md)).
 - **Luz de emergencia de 12V DC**, conmutada por el contacto del relé.
 - **Batería de respaldo de 12V**, independiente del adaptador monitoreado,
-  que alimenta toda la electrónica (NodeMCU, relé) y la luz de emergencia
-  — así el sistema sigue funcionando durante el corte que debe detectar.
+  que alimenta toda la electrónica (microcontrolador, relé) y la luz de
+  emergencia — así el sistema sigue funcionando durante el corte que debe
+  detectar.
 - **Controlador de carga** (AC → 12V), enchufado en la misma toma
   monitoreada, que mantiene cargada la batería de respaldo.
 - **Regulador step-down 12V → 5V** (tipo LM2596 o similar) entre la batería
-  y la NodeMCU/lógica del relé.
+  y la lógica del microcontrolador/relé.
 - **Circuito divisor de voltaje** para medir la presencia de tensión de línea
   de forma segura, partiendo de un adaptador ya armado:
   - **Adaptador de 5V** (cargador USB / fuente de pared) enchufado en la
@@ -39,12 +53,15 @@ el atardecer si ya había un corte en curso.
     proporcional a la presencia de corriente. Al ser un dispositivo sellado,
     no requiere cablear nada del lado de AC.
   - **R1 = 10 kΩ** y **R2 = 15 kΩ** formando el divisor de voltaje hacia el
-    pin ADC.
-  - **C1 = 0.1 µF** como filtro/estabilizador de la lectura hacia `A0`.
+    pin ADC (`A0` en NodeMCU, `GPIO34` en ESP32 — en ESP32 además hay que
+    declarar `attenuation: 11db` en el sensor, ver
+    [docs/CABLEADO-ESP32.md](docs/CABLEADO-ESP32.md)).
+  - **C1 = 0.1 µF** como filtro/estabilizador de la lectura hacia el pin ADC.
 
 Para el diagrama de cableado completo (incluyendo el regulador y la conexión
 de la batería al relé), el cálculo del divisor y el checklist de armado paso
-a paso, ver **[docs/CABLEADO.md](docs/CABLEADO.md)**.
+a paso, ver **[docs/CABLEADO.md](docs/CABLEADO.md)** (NodeMCU/ESP8266) o
+**[docs/CABLEADO-ESP32.md](docs/CABLEADO-ESP32.md)** (ESP32).
 
 ### ⚠️ Advertencia de seguridad
 
@@ -65,12 +82,22 @@ provocar chispas o daño si se cortocircuitan sus terminales:
 
 ## Pines usados
 
+**NodeMCU / ESP8266** ([luz-emergencia.yaml](luz-emergencia.yaml)):
+
 | Pin (YAML) | Etiqueta en la NodeMCU | Función                                              |
 |------------|-------------------------|-------------------------------------------------------|
 | `A0`       | `A0`                    | Entrada ADC — lectura de voltaje del divisor          |
 | `GPIO4`    | `D2`                    | Salida digital — control del relé de luz de emergencia |
 
-Detalle completo de cableado en [docs/CABLEADO.md](docs/CABLEADO.md).
+**ESP32** ([luz-emergencia-esp32.yaml](luz-emergencia-esp32.yaml)):
+
+| Pin (YAML) | Función                                                        |
+|------------|-----------------------------------------------------------------|
+| `GPIO34`   | Entrada ADC1 — lectura de voltaje del divisor (con `attenuation: 11db`) |
+| `GPIO4`    | Salida digital — control del relé de luz de emergencia          |
+
+Detalle completo de cableado en [docs/CABLEADO.md](docs/CABLEADO.md) o
+[docs/CABLEADO-ESP32.md](docs/CABLEADO-ESP32.md).
 
 ## Instalación
 
@@ -92,11 +119,18 @@ Detalle completo de cableado en [docs/CABLEADO.md](docs/CABLEADO.md).
 
    Copia el resultado en el campo `api_encryption_key` de `secrets.yaml`.
 
-4. Compila y flashea el dispositivo con ESPHome:
+4. Compila y flashea el dispositivo con ESPHome, usando el YAML que
+   corresponda a tu placa:
 
    ```bash
+   # NodeMCU / ESP8266
    esphome run luz-emergencia.yaml
+
+   # ESP32
+   esphome run luz-emergencia-esp32.yaml
    ```
+
+   `secrets.yaml` es el mismo para ambos — solo cambia el archivo principal.
 
 ## Entidades configurables desde Home Assistant
 
