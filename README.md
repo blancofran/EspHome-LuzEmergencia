@@ -25,33 +25,37 @@ el atardecer si ya había un corte en curso.
 - **Relé** para controlar la luz de emergencia (conectado a `GPIO4`, pin
   `D2` en la serigrafía de la NodeMCU).
 - **Circuito divisor de voltaje** para medir la presencia de tensión de línea
-  de forma segura y aislada:
-  - Fuente aislada tipo **HLK-PM01** (5V) alimentada desde la línea AC,
-    para obtener una señal de bajo voltaje proporcional a la presencia de
-    corriente.
+  de forma segura, partiendo de un adaptador ya armado:
+  - **Adaptador de 5V** (cargador USB / fuente de pared) enchufado en la
+    toma que se quiere monitorear, para obtener una señal de bajo voltaje
+    proporcional a la presencia de corriente. Al ser un dispositivo sellado,
+    no requiere cablear nada del lado de AC.
   - **R1 = 10 kΩ** y **R2 = 15 kΩ** formando el divisor de voltaje hacia el
     pin ADC.
   - **C1 = 0.1 µF** como filtro/estabilizador de la lectura hacia `A0`.
+  - Una **fuente de respaldo** (batería/power bank/UPS) separada, para
+    alimentar la NodeMCU y el relé de forma que sigan activos durante un
+    corte — ver detalle en [docs/CABLEADO.md](docs/CABLEADO.md).
 
 Para el diagrama de cableado completo, el cálculo del divisor y el checklist
 de armado paso a paso, ver **[docs/CABLEADO.md](docs/CABLEADO.md)**.
 
 ### ⚠️ Advertencia de seguridad
 
-Este proyecto involucra cableado cerca de **voltaje de línea AC (110-120V)**,
-que puede causar lesiones graves o la muerte si se manipula incorrectamente.
+El adaptador de 5V que monitorea la toma no requiere cableado — es un
+dispositivo sellado, solo se enchufa. El único punto que puede involucrar
+**voltaje de línea AC (110-120V)** es la salida del relé, si conectas la luz
+de emergencia empalmando directamente sus cables en vez de usar un enchufe
+intermedio:
 
 - **Desenergiza el circuito** (apaga el interruptor/breaker correspondiente)
-  antes de hacer cualquier conexión eléctrica.
+  antes de hacer esa conexión.
 - Verifica con un multímetro que no haya tensión antes de tocar los
   conductores.
 - Si no tienes experiencia trabajando con instalaciones eléctricas de línea,
-  **contrata a un electricista calificado** para la parte de conexión a la
-  red AC y la fuente aislada. La parte de bajo voltaje (ESP8266, relé, lógica
-  de ESPHome) puedes montarla tú mismo con seguridad.
-- Usa siempre una fuente **aislada galvánicamente** (como el HLK-PM01) entre
-  la línea AC y el circuito de control; nunca conectes el ADC del ESP8266
-  directamente a la red eléctrica.
+  **contrata a un electricista calificado** para esa conexión puntual. El
+  resto del proyecto (NodeMCU, relé, divisor) es de bajo voltaje y seguro de
+  armar tú mismo.
 
 ## Pines usados
 

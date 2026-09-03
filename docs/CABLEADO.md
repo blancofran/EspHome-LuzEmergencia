@@ -1,9 +1,11 @@
 # Cableado del ESP8266 (NodeMCU)
 
-Este documento detalla el cableado físico completo del proyecto: la placa
-usada, el circuito divisor de voltaje que detecta la presencia de corriente,
-y la conexión del relé. Léelo junto con la [advertencia de seguridad del
-README](../README.md#advertencia-de-seguridad) antes de empezar.
+Este documento detalla el cableado físico del proyecto: la placa usada, el
+circuito divisor de voltaje que detecta la presencia de corriente, y la
+conexión del relé. El circuito de detección parte de un **adaptador de 5V**
+ya armado (cargador USB / fuente de pared) enchufado en la toma que se
+quiere monitorear — no se cablea nada del lado de AC, el adaptador es un
+dispositivo sellado que solo se enchufa.
 
 ## Placa usada
 
@@ -26,137 +28,133 @@ Esto es clave para el cálculo del divisor externo más abajo.
 | `3V3` / `VIN`          | `3V3` / `Vin`                 | Alimentación de la propia NodeMCU |
 | `GND`                  | `GND`                         | Referencia común                  |
 
-## ⚠️ Antes de tocar cualquier cable
+## Antes de empezar
 
-- **Desenergiza el circuito** en el interruptor/breaker antes de conectar o
-  desconectar nada del lado de línea AC (110-120V).
-- Verifica con un multímetro que no haya tensión antes de tocar conductores.
-- Separa físicamente la sección de alta tensión (AC, HLK-PM01) de la sección
-  de bajo voltaje (NodeMCU, divisor, lógica del relé) dentro del gabinete —
-  usa canaletas o barreras aislantes entre ambas.
-- Si no tienes experiencia con instalaciones de línea AC, **contrata un
-  electricista calificado** para la parte de conexión a la red y la fuente
-  aislada. El resto (NodeMCU, relé, divisor) es de bajo voltaje y seguro de
-  armar tú mismo.
+- El **adaptador de 5V** que monitorea la toma no requiere cableado de tu
+  parte: es un dispositivo sellado, solo se enchufa.
+- Si el relé va a conmutar directamente la alimentación de la luz de
+  emergencia (cortando/uniendo sus propios cables de línea en vez de usar un
+  enchufe intermedio), esa parte sí es de línea AC: desenergiza el circuito
+  en el breaker, verifica con multímetro que no haya tensión, y si no tienes
+  experiencia con instalaciones eléctricas contrata a un electricista para
+  esa conexión puntual.
+- Todo lo demás (NodeMCU, divisor, lógica del relé) es de bajo voltaje y
+  seguro de armar tú mismo.
 - Usa un gabinete cerrado, no conductor, para todo el conjunto una vez
   cableado.
 
 ## Diagrama general
 
 ```
-  ── Sección AC (110-120V) ── ⚠ PELIGRO ⚠ ─────────────────────────────────
-                                                             │
-   Línea AC ──┬─────────────────────────────┐               │
-   (L, N)     │                             │               │
-              ▼                             ▼               │
-        ┌───────────┐                 ┌───────────┐         │
-        │ HLK-PM01  │                 │   RELÉ    │         │
-        │  AC → 5V  │                 │  COM ─────┼─── L ───┘
-        │  aislado  │                 │  NO  ──────── Luz de emergencia
-        └─────┬─────┘                 └─────┬─────┘
-              │ +5V   GND                    │  Vcc / GND / IN
-              │                              │
-  ── Sección de bajo voltaje ───────────────────────────────────────────────
-              │                              │
-              ├──────────────┐               │
-              │              │               │
-         R1 10kΩ             │        NodeMCU: 5V/VIN, GND
-              │              │               │
-              ├─── A0 (NodeMCU)              │
-              │              │               │
-         R2 15kΩ         C1 0.1µF            │
-              │              │               │
-              └──────┬───────┘               │
-                     │                       │
-                    GND ─────────────────────┴──── GND (común)
+   Adaptador 5V ──────────────────────┐
+   (enchufado en la toma               │ +5V         GND
+    que se quiere monitorear)          │              │
+                                       │              │
+                            ┌──────────┴──┐           │
+                            │             │           │
+                       R1 10kΩ            │           │
+                            │             │           │
+                            ├──── A0 (NodeMCU)         │
+                            │             │           │
+                       R2 15kΩ       C1 0.1µF          │
+                            │             │           │
+                            └──────┬──────┘           │
+                                   │                   │
+                                  GND ──────────────────┴──── GND (común)
 
-                                    D2 (GPIO4) NodeMCU ──── IN del relé
+
+   Fuente de respaldo (batería / UPS) ──── 5V·VIN, GND ──── NodeMCU + Relé
+
+
+   D2 (GPIO4) NodeMCU ──── IN del relé ──── COM/NO del relé ──── Luz de emergencia
 ```
 
-> El relé y la NodeMCU comparten GND. La NodeMCU controla el relé con la
-> señal digital `D2` (`GPIO4`); el relé, a su vez, conmuta la luz de
-> emergencia del lado de AC, físicamente aislado del lado de control.
+> El adaptador de 5V solo alimenta el divisor de voltaje (el "sensor"). La
+> NodeMCU y el relé se alimentan de una fuente de respaldo aparte — ver la
+> sección más abajo. El relé y la NodeMCU comparten GND, y la NodeMCU lo
+> controla con la señal digital `D2` (`GPIO4`).
 
 ## Divisor de voltaje (detección de corriente)
 
 Componentes: **R1 = 10 kΩ**, **R2 = 15 kΩ**, **C1 = 0.1 µF**, alimentados
-desde la salida de 5V del **HLK-PM01**.
+desde la salida de 5V del **adaptador** enchufado en la toma monitoreada.
 
 ```
-  +5V (HLK-PM01) ──[ R1 10kΩ ]──┬── A0 (NodeMCU)
-                                │
-                          [ R2 15kΩ ]
-                                │
-                          [ C1 0.1µF ]
-                                │
-                               GND
+  +5V (adaptador) ──[ R1 10kΩ ]──┬── A0 (NodeMCU)
+                                 │
+                           [ R2 15kΩ ]
+                                 │
+                           [ C1 0.1µF ]
+                                 │
+                                GND
 ```
 
 - R1 conecta el nodo de medición con el riel de +5V.
 - R2 conecta el mismo nodo a GND, formando el divisor.
 - C1 filtra ruido/parpadeos y estabiliza la lectura del ADC.
 
-Voltaje resultante en el pin `A0` con el HLK-PM01 energizado:
+Voltaje resultante en el pin `A0` con el adaptador energizado:
 
 ```
 V(A0) = 5V × R2 / (R1 + R2) = 5V × 15k / (10k + 15k) = 3.0V
 ```
 
 3.0V queda por debajo del máximo admitido por el pin `A0` de la NodeMCU
-(~3.3V), dejando margen de seguridad. Cuando falta la corriente, el
-HLK-PM01 deja de entregar 5V y `V(A0)` cae a ~0V, que es lo que el YAML usa
-como umbral (`multiply: 5` + comparación en `0.5`) para decidir si hay o no
-corriente.
+(~3.3V), dejando margen de seguridad. Cuando falta la corriente en la toma
+monitoreada, el adaptador deja de entregar 5V y `V(A0)` cae a ~0V, que es lo
+que el YAML usa como umbral (`multiply: 5` + comparación en `0.5`) para
+decidir si hay o no corriente.
 
 **Verifica siempre con un multímetro** el voltaje real en `A0` antes de
-conectarlo a la NodeMCU, y ajusta R1/R2 si tu HLK-PM01 o tolerancias de
-resistencias dan un valor distinto — nunca debe superar 3.3V.
+conectarlo a la NodeMCU, y ajusta R1/R2 si tu adaptador o las tolerancias de
+las resistencias dan un valor distinto — nunca debe superar 3.3V.
 
 ## Relé
 
 - Usa un módulo de relé para 5V con **opto-acoplador** (aísla eléctricamente
-  la lógica de la NodeMCU del lado de conmutación AC).
+  la lógica de la NodeMCU del lado de conmutación).
 - `IN` del relé → `D2` (`GPIO4`) de la NodeMCU.
-- `VCC` del relé → `VIN` (5V) de la NodeMCU (o directamente al +5V del
-  HLK-PM01, según el módulo).
+- `VCC` del relé → 5V de la fuente de respaldo (junto con la NodeMCU).
 - `GND` del relé → `GND` común con la NodeMCU.
 - Revisa si tu módulo de relé es activo en bajo (la mayoría de los módulos
   de 1 canal lo son). Si el relé enciende la luz al revés de lo esperado
   (encendida cuando debería estar apagada), cambia `inverted: true` en el
   `switch` `relay0` del YAML.
-- El contacto `COM`/`NO` del relé conmuta la **fase (L)** hacia la luz de
-  emergencia — nunca el neutro.
+- El contacto `COM`/`NO` del relé conmuta la alimentación de la luz de
+  emergencia. Si la conectas mediante un enchufe/toma intermedia no hay
+  cables de línea que manipular; si en cambio empalmas directamente los
+  cables de la luz, tratá esa conexión como trabajo de línea AC (ver
+  "Antes de empezar").
 
-## ⚠️ Alimentación de respaldo — requisito de diseño
+## Alimentación de respaldo — requisito de diseño
 
 La NodeMCU y el relé necesitan estar **energizados durante el corte** para
-poder encender la luz en el momento en que ocurre. Si alimentas la NodeMCU
-únicamente desde el mismo HLK-PM01 que estás monitoreando, el corte de
-corriente también apaga la NodeMCU justo cuando debe actuar, y el sistema no
+poder encender la luz en el momento en que ocurre. Si los alimentas
+únicamente desde el mismo adaptador de 5V que estás monitoreando, el corte
+de corriente también los apaga justo cuando deben actuar, y el sistema no
 podrá encender el relé.
 
 Alimenta la NodeMCU y el relé desde una fuente independiente que se
 mantenga activa durante un corte: una batería/power bank USB, un pequeño
 UPS, o la misma batería de respaldo de la luz de emergencia (si la tiene y
-puede entregar 5V/500mA). El HLK-PM01 solo debería usarse para alimentar el
-lado de **medición** (el divisor de voltaje), no la NodeMCU completa.
+puede entregar 5V/500mA). El adaptador de 5V monitoreado solo debería usarse
+para alimentar el lado de **medición** (el divisor de voltaje), no la
+NodeMCU completa.
 
 ## Checklist de armado
 
-1. Cablea el HLK-PM01 (lado AC) con el circuito desenergizado. Verifica con
-   multímetro que no haya tensión antes de continuar.
-2. Arma el divisor R1/R2/C1 en una zona de baja tensión, alimentado desde el
-   +5V del HLK-PM01.
-3. Antes de conectar el divisor al `A0` de la NodeMCU, energiza solo el
-   HLK-PM01 y mide con multímetro el voltaje en el nodo del divisor —
-   confirma que sea ~3V y nunca mayor a 3.3V.
-4. Conecta `A0` y `GND` del divisor a la NodeMCU.
-5. Cablea el relé: `IN` a `D2`, `VCC`/`GND` a la fuente de respaldo elegida
+1. Arma el divisor R1/R2/C1 en una zona de baja tensión.
+2. Enchufa el adaptador de 5V en la toma que quieres monitorear y, antes de
+   conectar nada a la NodeMCU, mide con multímetro el voltaje en el nodo del
+   divisor — confirma que sea ~3V y nunca mayor a 3.3V.
+3. Conecta `A0` y `GND` del divisor a la NodeMCU.
+4. Cablea el relé: `IN` a `D2`, `VCC`/`GND` a la fuente de respaldo elegida
    junto con la NodeMCU.
-6. Cablea `COM`/`NO` del relé a la fase de la luz de emergencia, con el
-   circuito de AC desenergizado.
-7. Cierra el gabinete manteniendo separadas las secciones de AC y de bajo
-   voltaje.
-8. Energiza todo y verifica en Home Assistant que "Electricidad" refleje el
-   estado real, y que al provocar un corte (apagando el breaker que
-   alimenta el HLK-PM01) el relé encienda tras el retardo configurado.
+5. Conecta `COM`/`NO` del relé a la alimentación de la luz de emergencia
+   (por enchufe intermedio, o empalmando línea si corresponde — ver
+   "Antes de empezar" para las precauciones de esa conexión puntual).
+6. Cierra el gabinete manteniendo el divisor y el relé ordenados y
+   protegidos de contacto accidental.
+7. Energiza todo y verifica en Home Assistant que "Electricidad" refleje el
+   estado real, y que al provocar un corte (desenchufando el adaptador de
+   5V monitoreado) el relé encienda tras el retardo configurado.
