@@ -24,6 +24,12 @@ el atardecer si ya había un corte en curso.
   usa este proyecto.
 - **Relé** para controlar la luz de emergencia (conectado a `GPIO4`, pin
   `D2` en la serigrafía de la NodeMCU).
+- **Luz de emergencia de 12V DC**, conmutada por el contacto del relé.
+- **Batería de respaldo de 12V**, independiente del adaptador monitoreado,
+  que alimenta toda la electrónica (NodeMCU, relé) y la luz de emergencia
+  — así el sistema sigue funcionando durante el corte que debe detectar.
+- **Regulador step-down 12V → 5V** (tipo LM2596 o similar) entre la batería
+  y la NodeMCU/lógica del relé.
 - **Circuito divisor de voltaje** para medir la presencia de tensión de línea
   de forma segura, partiendo de un adaptador ya armado:
   - **Adaptador de 5V** (cargador USB / fuente de pared) enchufado en la
@@ -33,29 +39,26 @@ el atardecer si ya había un corte en curso.
   - **R1 = 10 kΩ** y **R2 = 15 kΩ** formando el divisor de voltaje hacia el
     pin ADC.
   - **C1 = 0.1 µF** como filtro/estabilizador de la lectura hacia `A0`.
-  - Una **fuente de respaldo** (batería/power bank/UPS) separada, para
-    alimentar la NodeMCU y el relé de forma que sigan activos durante un
-    corte — ver detalle en [docs/CABLEADO.md](docs/CABLEADO.md).
 
-Para el diagrama de cableado completo, el cálculo del divisor y el checklist
-de armado paso a paso, ver **[docs/CABLEADO.md](docs/CABLEADO.md)**.
+Para el diagrama de cableado completo (incluyendo el regulador y la conexión
+de la batería al relé), el cálculo del divisor y el checklist de armado paso
+a paso, ver **[docs/CABLEADO.md](docs/CABLEADO.md)**.
 
 ### ⚠️ Advertencia de seguridad
 
-El adaptador de 5V que monitorea la toma no requiere cableado — es un
-dispositivo sellado, solo se enchufa. El único punto que puede involucrar
-**voltaje de línea AC (110-120V)** es la salida del relé, si conectas la luz
-de emergencia empalmando directamente sus cables en vez de usar un enchufe
-intermedio:
+Todo el proyecto es de bajo voltaje DC (5V/12V) — no hay cables de línea AC
+que manipular en ningún punto. El adaptador de 5V que monitorea la toma no
+requiere cableado, es un dispositivo sellado que solo se enchufa.
 
-- **Desenergiza el circuito** (apaga el interruptor/breaker correspondiente)
-  antes de hacer esa conexión.
-- Verifica con un multímetro que no haya tensión antes de tocar los
-  conductores.
-- Si no tienes experiencia trabajando con instalaciones eléctricas de línea,
-  **contrata a un electricista calificado** para esa conexión puntual. El
-  resto del proyecto (NodeMCU, relé, divisor) es de bajo voltaje y seguro de
-  armar tú mismo.
+Aun así, la batería de 12V puede entregar corriente suficiente para
+provocar chispas o daño si se cortocircuitan sus terminales:
+
+- Verifica siempre la **polaridad** antes de conectar cada componente
+  (regulador, relé, luz).
+- No dejes los terminales de la batería expuestos o al alcance de objetos
+  metálicos.
+- Usa un gabinete cerrado, no conductor, para todo el conjunto una vez
+  armado.
 
 ## Pines usados
 
