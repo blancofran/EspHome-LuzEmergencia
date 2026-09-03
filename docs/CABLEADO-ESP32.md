@@ -1,6 +1,6 @@
 # Cableado del ESP32 (DevKit)
 
-Este documento es la variante para **ESP32** de [CABLEADO.md](CABLEADO.md)
+Este documento es la variante para **ESP32** de [CABLEADO-ESP8266.md](CABLEADO-ESP8266.md)
 (la versión para NodeMCU/ESP8266). El diseño eléctrico es exactamente el
 mismo — mismo divisor, misma batería, mismo cargador, mismo relé — lo único
 que cambia son los pines y un parámetro del sensor ADC en el YAML
@@ -128,7 +128,7 @@ de 12V. Un regulador step-down (buck) tipo LM2596 o similar convierte ese
 Igual que en la versión NodeMCU: un módulo sellado que se enchufa directo a
 AC en la **misma toma que estás monitoreando** con el adaptador de 5V, y
 mantiene cargada la batería de 12V. Ver el detalle completo en la sección
-"Controlador de carga" de [CABLEADO.md](CABLEADO.md) — no cambia nada de
+"Controlador de carga" de [CABLEADO-ESP8266.md](CABLEADO-ESP8266.md) — no cambia nada de
 esta parte al usar ESP32.
 
 ## Alimentación de respaldo — requisito de diseño

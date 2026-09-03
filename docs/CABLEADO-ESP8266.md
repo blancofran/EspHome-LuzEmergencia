@@ -53,7 +53,7 @@ Esto es clave para el cálculo del divisor externo más abajo.
 
 ## Diagrama general
 
-![Diagrama de cableado: adaptador de 5V al divisor R1/R2/C1 hacia A0 de la NodeMCU; un controlador de carga (AC → 12V) mantiene cargada una batería de 12V independiente, que alimenta, a través de un regulador step-down, a la NodeMCU y la lógica del relé, y directamente al contacto COM del relé, que conmuta 12V hacia la luz de emergencia; GND común entre todos los bloques.](cableado.svg)
+![Diagrama de cableado: adaptador de 5V al divisor R1/R2/C1 hacia A0 de la NodeMCU; un controlador de carga (AC → 12V) mantiene cargada una batería de 12V independiente, que alimenta, a través de un regulador step-down, a la NodeMCU y la lógica del relé, y directamente al contacto COM del relé, que conmuta 12V hacia la luz de emergencia; GND común entre todos los bloques.](cableado-esp8266.svg)
 
 *El adaptador de 5V solo alimenta el divisor de voltaje (el "sensor"). El
 controlador de carga toma AC de la misma toma monitoreada y mantiene

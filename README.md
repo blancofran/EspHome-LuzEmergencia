@@ -27,7 +27,7 @@ ambas:
 - **ESP8266** en una placa **NodeMCU** (módulo ESP-12E, board `nodemcuv2` en
   ESPHome) — no un módulo ESP-01, que no expone los pines `A0`/`GPIO4` que
   usa este proyecto. YAML: [luz-emergencia.yaml](luz-emergencia.yaml).
-  Cableado: [docs/CABLEADO.md](docs/CABLEADO.md).
+  Cableado: [docs/CABLEADO-ESP8266.md](docs/CABLEADO-ESP8266.md).
 - **ESP32 DevKit** (board `esp32dev` en ESPHome). YAML:
   [luz-emergencia-esp32.yaml](luz-emergencia-esp32.yaml). Cableado:
   [docs/CABLEADO-ESP32.md](docs/CABLEADO-ESP32.md).
@@ -60,7 +60,7 @@ Y en ambos casos:
 
 Para el diagrama de cableado completo (incluyendo el regulador y la conexión
 de la batería al relé), el cálculo del divisor y el checklist de armado paso
-a paso, ver **[docs/CABLEADO.md](docs/CABLEADO.md)** (NodeMCU/ESP8266) o
+a paso, ver **[docs/CABLEADO-ESP8266.md](docs/CABLEADO-ESP8266.md)** (NodeMCU/ESP8266) o
 **[docs/CABLEADO-ESP32.md](docs/CABLEADO-ESP32.md)** (ESP32).
 
 ### ⚠️ Advertencia de seguridad
@@ -96,7 +96,7 @@ provocar chispas o daño si se cortocircuitan sus terminales:
 | `GPIO34`   | Entrada ADC1 — lectura de voltaje del divisor (con `attenuation: 11db`) |
 | `GPIO4`    | Salida digital — control del relé de luz de emergencia          |
 
-Detalle completo de cableado en [docs/CABLEADO.md](docs/CABLEADO.md) o
+Detalle completo de cableado en [docs/CABLEADO-ESP8266.md](docs/CABLEADO-ESP8266.md) o
 [docs/CABLEADO-ESP32.md](docs/CABLEADO-ESP32.md).
 
 ## Instalación
